@@ -1,78 +1,106 @@
-var box,ground,slingshot;
-var score=0;
+//Create variables here
+var dog,happyDog;
+var database;
+var foodS,foodStock,addFood,labFed
+var upArrow,downArrow
+var fedTime,lastFed
+var foodObj
 
-const Engine = Matter.Engine;
-const World= Matter.World;
-const Bodies = Matter.Bodies;
-const Constraint = Matter.Constraint;
+
+function preload()
+{
+
+  //load images here
+  dog1 = loadImage("Dog.png");
+  dog2 = loadImage("happydog.png");
+
+}
 
 
 function setup() {
-  createCanvas(800,400);
-  createSprite(400, 200, 50, 50);
-  engine = Engine.create();
-  world = engine.world;
+	createCanvas(500, 500);
+  database=firebase.database();
 
- 
-  box8 = new Box(330,235,30,40)
-  box9 = new Box(360,235,30,40)
-  box10 = new Box(390,235,30,40)
-  box11 = new Box(420,235,30,40)
-  box12 = new Box(450,235,30,40)
+  //foodObj = new Food(200,200,20,20);
 
-  box13 = new Box(360,195,30,40)
-  box14 = new Box(390,195,30,40)
-  box15 = new Box(420,195,30,40)
+  feed=createButton("Feed the dog")
+  feed.position(700,95)
+  feed.mousePressed(feedDog)
 
-  box16 = new Box(390,155,30,40)
-
-  paper = new Paper(100,200)
-
-  launcher = new Launcher(paper.body,{x:100,y:100});
-
-
-  ground= new Ground(390,270,150,20)
-
-  text("SCORE:"+score,750,40)
-  box8.score;
-  box9.score;
-  box10.score;
-  box11.score;
-  box12.score;
-  box13.score;
-  box14.score;
-  box15.score;
-  box16.score;
+  addFood=createButton("Add Food")
+  addFood.position(800,95)
+  addFood.mousePressed(addFoods)
   
+
+  foodstock=database.ref('Food')
+  foodstock.on("value", readStock)
+  dog = createSprite(200,200,40,40);
+  dog.addImage("Dog",dog1)
+  dog.addImage("happydog",dog2)
+  dog.scale= 0.3;
 }
 
-function draw() {
-  background(200,200,200);  
-  Engine.update(engine);
 
-  box8.display();
-  box9.display();
-  box10.display();
-  box11.display();
-  box12.display();
+function draw() {  
+background(46, 139, 87);
 
-  box13.display();
-  box14.display();
-  box15.display();
 
-  box16.display();
 
-  paper.display();
-  launcher.display();
+fedTime=database.ref('FeedTime')
+fedTime.on("value",function(data){
+    lastFed=data.val();
+})
 
-  
-  ground.display();
+  drawSprites();
+  textSize(25);
+  fill("black");
+  stroke("black");
+  //add styles here
+text("Press up arrow to feed the dog", 150,20)
+
+//foodObj.display();
+
+if(labFed>12){
+  text("Last Feed : "+ lastFed%12 + "PM",350,30);
+  }
+  else if(lastFed==0){
+  text("Last Feed : 12 AM", 350, 30)
+  }
+  else{
+      text("Last Feed : "+ lastFed +"AM", 350,30)
+  }
+  }
+
+function feedDog(){
+  dog.addImage("happyDog");
+
+foodObf.updatefoodStock(foodObj.getFoodStock()-1)
+database.ref('/').update({
+  Food:foodObj.getFoodStock(),
+  FeedTime:hour()
+})
 }
 
-function mouseDragged(){
-  Matter.Body.setPosition(paper.body,{x:mouseX,y:mouseY});
+function addFoods(){
+  foodS++;
+  database.ref('/').update({
+    Food:foodS
+  })
 }
 
-function mouseReleased(){
-  launcher.releasePaper();
+function readStock(){
+  var foodref = database.ref("Food")
+  foodref.on("value",function(data){
+      foodS=data.val()
+  })
 }
+
+
+
+function deductFoodCount(){
+  foodS--;
+  database.ref('/').update({
+    Food:foodS
+  })
+}
+
